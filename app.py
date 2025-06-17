@@ -1,26 +1,38 @@
 import streamlit as st
-from instructor import INSTRUCTOR
-from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, ServiceContext
+from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+from InstructorEmbedding import INSTRUCTOR
+from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
+from llama_index.core.settings import Settings
 from llama_index.embeddings.openai import OpenAIEmbedding
-from llama_index.vector_stores import ChromaVectorStore
+from llama_index.vector_stores.chroma import ChromaVectorStore
 from llama_index.core.node_parser import SimpleNodeParser
-from llama_index.llms import ChatMessage, ChatResponse
 import chromadb
 import os
 import tempfile
 import requests
 
 # --- Config ---
-CHROMA_PATH = "chroma_store"
+CHROMA_HOST = os.getenv("CHROMA_HOST", "localhost")
+# CHROMA_PORT = int(os.getenv("CHROMA_PORT", "8000"))
+CHROMA_PORT_RAW = os.getenv("CHROMA_PORT", "8000")
+print(f"CHROMA_PORT raw value: {CHROMA_PORT_RAW!r}")  # For debug
+CHROMA_PORT = int(CHROMA_PORT_RAW)
+print(f"CHROMA_PORT: {CHROMA_PORT!r}")  # For debug
 VLLM_ENDPOINT = "http://your-vllm-endpoint:8000/generate"
 MODEL_NAME = "mistralai/Mistral-7B-Instruct-v0.2"
 
 # --- Init Chroma and LlamaIndex ---
-chroma_client = chromadb.Client()
-vector_store = ChromaVectorStore(chroma_client=chroma_client, collection_name="docs", persist_dir=CHROMA_PATH)
+# chroma_client = chromadb.HttpClient(host=CHROMA_HOST, port=CHROMA_PORT_RAW)
+vector_store = ChromaVectorStore(host=CHROMA_HOST, port=CHROMA_PORT, collection_name="docs")
 
-service_context = ServiceContext.from_defaults(embed_model=INSTRUCTOR(), llm=None)
-index = VectorStoreIndex.from_vector_store(vector_store=vector_store, service_context=service_context)
+embed_model = HuggingFaceEmbedding(
+    model_name="hkunlp/instructor-xl",
+    embed_batch_size=8,
+    normalize=True
+)
+# Settings.embed_model = INSTRUCTOR()
+Settings.embed_model = embed_model
+index = VectorStoreIndex.from_vector_store(vector_store=vector_store)
 
 # --- Streamlit UI ---
 st.title("Palimpsest AI: RAG Demo")
