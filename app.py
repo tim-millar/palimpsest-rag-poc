@@ -13,16 +13,13 @@ import requests
 
 # --- Config ---
 CHROMA_HOST = os.getenv("CHROMA_HOST", "localhost")
-# CHROMA_PORT = int(os.getenv("CHROMA_PORT", "8000"))
 CHROMA_PORT_RAW = os.getenv("CHROMA_PORT", "8000")
-print(f"CHROMA_PORT raw value: {CHROMA_PORT_RAW!r}")  # For debug
 CHROMA_PORT = int(CHROMA_PORT_RAW)
-print(f"CHROMA_PORT: {CHROMA_PORT!r}")  # For debug
-VLLM_ENDPOINT = "http://your-vllm-endpoint:8000/generate"
+# VLLM_ENDPOINT = "http://your-vllm-endpoint:8000/generate"
+VLLM_ENDPOINT = os.getenv("VLLM_ENDPOINT", "localhost")
 MODEL_NAME = "mistralai/Mistral-7B-Instruct-v0.2"
 
 # --- Init Chroma and LlamaIndex ---
-# chroma_client = chromadb.HttpClient(host=CHROMA_HOST, port=CHROMA_PORT_RAW)
 vector_store = ChromaVectorStore(host=CHROMA_HOST, port=CHROMA_PORT, collection_name="docs")
 
 embed_model = HuggingFaceEmbedding(

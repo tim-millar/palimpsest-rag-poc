@@ -6,11 +6,19 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: palimpsest-web
+    image: palimpsest_web
+    command: >
+      streamlit run app.py
+        --server.port 8501
+        --server.address 0.0.0.0
+        --server.fileWatcherType poll
+        --server.runOnSave true
     ports:
       - "8501:8501"
     environment:
       - CHROMA_HOST=chroma
       - CHROMA_PORT=8000
+      - VLLM_ENDPOINT=http://stub_server:8601
     depends_on:
       - chroma
     volumes:
@@ -23,6 +31,15 @@ services:
       - "8000:8000"
     volumes:
       - chroma_data:/chroma/chroma
+
+  stub_server:
+    image: palimpsest_web
+    container_name: stub_server
+    command: python stub_server.py
+    ports:
+      - "8601:8601"
+    volumes:
+      - .:/app/
 
 volumes:
   chroma_data:
