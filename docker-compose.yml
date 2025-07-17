@@ -15,12 +15,15 @@ services:
         --server.runOnSave true
     ports:
       - "8501:8501"
-    environment:
-      - CHROMA_HOST=chroma
-      - CHROMA_PORT=8000
-      - VLLM_ENDPOINT=http://stub_server:8601
+    env_file:
+      - .env
+    # environment:
+    #   - CHROMA_HOST=chroma
+    #   - CHROMA_PORT=8000
+    #   - VLLM_ENDPOINT=http://stub_server:8601
     depends_on:
       - chroma
+      - stub_server
     volumes:
       - .:/app/
 
