@@ -5,7 +5,6 @@ FROM python:3.10-slim
 WORKDIR /app
 
 RUN mkdir -p /app/.streamlit
-COPY .streamlit/config.toml /app/.streamlit/config.toml
 
 # Copy dependencies
 COPY requirements.txt .
